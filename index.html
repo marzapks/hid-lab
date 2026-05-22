@@ -36,7 +36,7 @@
 }
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden}
+html,body{height:100%;overflow:hidden;touch-action:manipulation}
 body{
   background:var(--bg);
   color:var(--text);
@@ -138,6 +138,9 @@ input,select{font-family:'Share Tech Mono',monospace;color:var(--text)}
 .hs{width:14px;height:70px;border-radius:8px;border:1px solid var(--line);position:relative;background:rgba(0,240,255,.06)}
 .hs .cap{position:absolute;left:-3px;width:20px;height:12px;border-radius:3px;background:var(--neon2);box-shadow:0 0 8px var(--neon2)}
 /* ===================== APP SHELL ===================== */
+/* prevent accidental double-tap-to-zoom on all tap targets (esp. piano keys) */
+#app,.wkey,.bkey,.cbar,.pad,.btn,.seg button,.vc,.reveal-tab,select,.hslider,
+.kb-wrap,#dock,.piano-tools,#topbar,.win,.win-bar,.cam-stage{touch-action:manipulation}
 #app{position:fixed;inset:0;display:none;flex-direction:column;
   background:
     radial-gradient(ellipse at 0% 0%,rgba(0,240,255,.06),transparent 40%),
@@ -1054,20 +1057,22 @@ const WinMgr={
   },
   openWin(type){
     if(this.open.has(type)){ this.focus(this.open.get(type)); return this.open.get(type); }
-    const def=this.registry[type]; if(!def) return;
+    const def=this.registry[type];
+    if(!def){ if(typeof toast==='function') toast('“'+type+'” isn’t available — reload the app to update'); return; }
     const win=document.createElement('div'); win.className='win'; win.dataset.type=type;
     const w=def.w||320,h=def.h||280;
     const dx=(this.cascade%6)*30, dy=(this.cascade%6)*30; this.cascade++;
     win.style.width=w+'px'; win.style.height=h+'px';
-    win.style.left=Math.min(window.innerWidth-w-20, 60+dx)+'px';
-    win.style.top=(80+dy)+'px';
+    win.style.left=Math.max(8,Math.min(window.innerWidth-w-20, 60+dx))+'px';
+    win.style.top=Math.max(8,Math.min((window.innerHeight||800)-80, 80+dy))+'px';
     win.innerHTML=`<div class="win-bar"><span class="win-title">${def.title}</span>
       <button class="win-dot min" title="Minimize">_</button>
       <button class="win-dot close" title="Close">×</button></div>
       <div class="win-body"></div><div class="win-resize"></div>`;
     document.getElementById('desktop').appendChild(win);
     this.open.set(type,win);
-    def.build(win.querySelector('.win-body'), win);
+    try{ def.build(win.querySelector('.win-body'), win); }
+    catch(err){ console.error('window build failed:',type,err); if(typeof toast==='function') toast('Couldn’t open '+type+': '+((err&&err.message)||err)); }
     this.wire(win,type);
     this.focus(win);
     markDock(type,true);
@@ -1881,6 +1886,8 @@ WinMgr.registry.help={title:'Help Guide',w:380,h:460,build(body){
   ];
   sections.forEach(([h,p])=>{ const hd=document.createElement('div'); hd.className='help-h'; hd.textContent=h;
     const pp=document.createElement('div'); pp.className='help-p'; pp.textContent=p; body.appendChild(hd); body.appendChild(pp); });
+  const stamp=document.createElement('div'); stamp.className='help-p'; stamp.style.opacity='.6'; stamp.style.marginTop='14px';
+  stamp.textContent='Build 2026-05-22b · camera + double-tap-zoom lock'; body.appendChild(stamp);
 }};
 
 /* ---- SHORTCUTS ---- */
