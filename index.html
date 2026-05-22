@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>HID Lab — Live Instrument Utility</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -145,8 +148,10 @@ input,select{font-family:'Share Tech Mono',monospace;color:var(--text)}
 #app::before{content:"";position:absolute;inset:0;background-image:var(--grid);background-size:40px 40px;opacity:.5;pointer-events:none}
 
 /* TOP BAR */
+#topRegion{position:relative;z-index:40;flex:none;overflow:hidden;transition:none;padding-top:env(safe-area-inset-top,0)}
+#topRegion.hidden{display:none}
 #topbar{position:relative;z-index:40;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  padding:8px 12px;background:linear-gradient(180deg,rgba(8,14,22,.96),rgba(8,14,22,.78));
+  padding:8px 12px;padding-right:158px;background:linear-gradient(180deg,rgba(8,14,22,.96),rgba(8,14,22,.78));
   border-bottom:1px solid var(--line);box-shadow:0 4px 24px rgba(0,0,0,.6)}
 .brandmini{font-family:'Pirata One',serif;font-size:26px;letter-spacing:1px;
   background:linear-gradient(180deg,#eafdff,var(--neon));-webkit-background-clip:text;background-clip:text;color:transparent;
@@ -274,10 +279,10 @@ select:focus,.txtin:focus{border-color:var(--neon);box-shadow:0 0 8px rgba(0,240
 /* PIANO DOCK */
 #pianoDock{position:relative;z-index:35;border-top:1px solid var(--line);
   background:linear-gradient(180deg,rgba(8,14,22,.7),rgba(4,7,12,.95));
-  box-shadow:0 -6px 30px rgba(0,0,0,.6);transition:transform .35s ease;}
-#pianoDock.hidden{transform:translateY(110%)}
+  box-shadow:0 -6px 30px rgba(0,0,0,.6);transition:transform .35s ease;padding-bottom:env(safe-area-inset-bottom,0)}
+#pianoDock.hidden{display:none}
 .piano-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 12px;border-bottom:1px solid rgba(0,240,255,.12)}
-.kb-wrap{position:relative;height:150px;overflow-x:auto;overflow-y:hidden;padding:6px 6px 10px;scrollbar-width:thin}
+.kb-wrap{position:relative;height:var(--kb-h,150px);overflow-x:auto;overflow-y:hidden;padding:6px 6px 10px;scrollbar-width:thin}
 .kb-wrap::-webkit-scrollbar{height:7px}
 .kb-wrap::-webkit-scrollbar-thumb{background:rgba(0,240,255,.4);border-radius:6px}
 .keyboard{position:relative;height:100%;display:flex;align-items:flex-end;min-width:max-content}
@@ -338,10 +343,95 @@ select:focus,.txtin:focus{border-color:var(--neon);box-shadow:0 0 8px rgba(0,240
 .flexcol{display:flex;flex-direction:column;gap:8px}
 .tag-on{color:var(--neon3)}
 .tag-off{color:#557}
+/* ===== MOTION (camera) WINDOW ===== */
+.mo-stage{position:relative;width:100%;height:210px;background:#000;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:8px;flex:none}
+.mo-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#moVideo{position:absolute;left:-20px;top:-20px;width:2px;height:2px;opacity:0;pointer-events:none}
+.mo-status{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--neon);min-height:15px;margin:0 0 6px;opacity:.9}
+.mo-badges{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 8px}
+.mo-badge{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.5px;padding:4px 8px;border:1px solid var(--line);border-radius:6px;color:var(--muted);cursor:pointer;text-transform:uppercase;user-select:none}
+.mo-badge.on{color:#021;font-weight:600;border-color:transparent}
+.mo-badge.head.on{background:var(--neon);box-shadow:0 0 10px var(--neon)}
+.mo-badge.arms.on{background:#ff2bd6;box-shadow:0 0 10px #ff2bd6}
+.mo-badge.hands.on{background:#b6ff3a;box-shadow:0 0 10px #b6ff3a}
+.mo-badge.legs.on{background:#9b6bff;box-shadow:0 0 10px #9b6bff}
+.mo-badge.body.on{background:#27e0c3;box-shadow:0 0 10px #27e0c3}
+.mo-zoom{display:flex;align-items:center;gap:8px;margin:4px 0}
+.mo-zoom input{flex:1}
+#viewCtl{position:absolute;top:calc(6px + env(safe-area-inset-top,0));right:calc(8px + env(safe-area-inset-right,0));z-index:60;display:flex;gap:5px}
+.vc{font-family:'Orbitron',sans-serif;font-size:9px;letter-spacing:.5px;text-transform:uppercase;
+  padding:5px 9px;border:1px solid var(--line);border-radius:7px;background:rgba(4,8,14,.85);color:var(--muted);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.vc.on{color:#021;background:var(--neon);box-shadow:0 0 10px var(--neon)}
+.vc:active{transform:scale(.94)}
+.resz-h{position:relative;z-index:45;height:14px;flex:none;cursor:ns-resize;touch-action:none;
+  display:flex;align-items:center;justify-content:center;background:rgba(4,8,14,.5)}
+.resz-h::before{content:"";width:46px;height:4px;border-radius:3px;
+  background:var(--neon);opacity:.55;box-shadow:0 0 10px var(--neon)}
+.resz-h:hover::before{opacity:.9}
+.resz-h.top{border-top:1px solid var(--line)}
+.reveal-tab{position:absolute;left:50%;transform:translateX(-50%);z-index:55;display:none;
+  font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  padding:5px 16px;border:1px solid var(--neon);color:var(--neon);cursor:pointer;
+  background:rgba(4,8,14,.9);box-shadow:0 0 14px rgba(0,240,255,.4);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.reveal-tab.top{top:0;border-radius:0 0 10px 10px}
+.reveal-tab.bottom{bottom:0;border-radius:10px 10px 0 0}
+.reveal-tab:active{background:var(--neon);color:#021}
+#app.top-hidden .reveal-tab.top{display:block}
+#app.piano-hidden .reveal-tab.bottom{display:block}
+#app.stage #topRegion,#app.stage #topResize{display:none}
+#app.stage #pianoDock,#app.stage #kbResize{display:none}
+#app.stage #desktop{background:radial-gradient(circle at 50% 40%,rgba(0,240,255,.05),transparent 70%)}
+
+/* ===== CAMERA ===== */
+.cam-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;
+  opacity:0;pointer-events:none;transition:opacity .4s ease;transform:scaleX(-1);
+  filter:saturate(1.15) contrast(1.05)}
+.cam-bg.on{opacity:.32}
+.cam-stage{position:relative;width:100%;height:150px;border:1px solid var(--line);border-radius:8px;overflow:hidden;
+  background:#04070c;display:flex;align-items:center;justify-content:center}
+.cam-stage video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.cam-stage .ph{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);text-align:center;padding:10px}
+.cam-dot{position:absolute;width:18px;height:18px;border-radius:50%;transform:translate(-50%,-50%);
+  background:var(--neon2);box-shadow:0 0 14px var(--neon2);pointer-events:none;transition:opacity .15s}
+.cam-read{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--neon);opacity:.85;margin-top:6px}
+.cam-row{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-top:8px}
+
+/* ===== RESPONSIVE (phones & tablets) ===== */
+@media(max-width:900px){
+  .win{max-width:96vw}
+}
 @media(max-width:640px){
   .logo{font-size:clamp(54px,18vw,90px)}
-  .tb-group{padding:4px 7px}
-  .hslider{width:90px}
+  .tb-group{padding:4px 7px;gap:6px}
+  .hslider{width:84px}
+  #topbar{gap:7px;padding:7px 8px;padding-right:124px}
+  .brandmini{font-size:20px}
+  #dock{gap:6px;padding:6px 8px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+  #dock .btn{flex:none;font-size:11px;padding:7px 9px}
+  .piano-tools{gap:6px;padding:6px 8px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch}
+  .piano-tools .tb-group{flex:none}
+  .btn{padding:8px 10px;font-size:12px}
+  .btn.sm{padding:7px 9px}
+  .win{min-width:0}
+  .knob .dial{width:50px;height:50px}
+  .pwheel{width:46px}
+  #viewCtl{top:5px;right:6px}
+  .vc{padding:6px 8px}
+}
+@media(max-width:640px) and (orientation:portrait){
+  .kb-wrap{--kb-h:120px}
+}
+/* larger touch targets on coarse pointers (touch devices) */
+@media(pointer:coarse){
+  .btn,.vc,.seg button{min-height:38px}
+  .resz-h{height:20px}
+  .knob .dial{cursor:ns-resize}
+  select,.txtin{padding:9px 10px;font-size:14px}
+  .win-dot{width:26px;height:26px}
+}
+@media(max-width:480px){
+  .win{width:94vw!important;left:3vw!important}
 }
 </style>
 </head>
@@ -372,6 +462,17 @@ select:focus,.txtin:focus{border-color:var(--neon);box-shadow:0 0 8px rgba(0,240
 <!-- ===================== APP ===================== -->
 <div id="app">
 
+  <!-- VIEW CONTROLS (always reachable) -->
+  <div id="viewCtl">
+    <button id="vcTop" class="vc on" title="Toggle top panel">Top</button>
+    <button id="vcPiano" class="vc on" title="Toggle piano">Piano</button>
+    <button id="vcStage" class="vc" title="Stage mode — show only windows">Stage</button>
+  </div>
+  <div id="revealTop" class="reveal-tab top">▾ Controls</div>
+  <div id="revealPiano" class="reveal-tab bottom">▴ Piano</div>
+
+  <!-- TOP REGION (resizable / hideable) -->
+  <div id="topRegion">
   <!-- TOP BAR -->
   <div id="topbar">
     <div class="brandmini">HID.Lab</div>
@@ -409,18 +510,24 @@ select:focus,.txtin:focus{border-color:var(--neon);box-shadow:0 0 8px rgba(0,240
     <button class="btn" data-win="pads">Pads</button>
     <button class="btn" data-win="bend">Pitch Bend</button>
     <button class="btn" data-win="space">3D Sound</button>
+    <button class="btn" data-win="motion">Motion Cam</button>
     <button class="btn" data-win="build">Build Mode</button>
     <button class="btn" data-win="keys">Keyboard</button>
     <button class="btn" data-win="theme">Colors</button>
+    <button class="btn" data-win="camera">Camera</button>
     <button class="btn" data-win="help">Help</button>
     <button class="btn" data-win="shortcuts">Shortcuts</button>
   </div>
+  </div><!-- /topRegion -->
+  <div id="topResize" class="resz-h" title="Drag to resize · double-tap to hide"></div>
 
   <!-- DESKTOP (windows are injected here) -->
-  <div id="desktop"></div>
+  <div id="desktop"><video id="camBg" class="cam-bg" playsinline muted></video></div>
 
   <!-- PIANO DOCK -->
+  <video id="moVideo" playsinline autoplay muted></video>
   <div id="pianoDock">
+    <div id="kbResize" class="resz-h top" title="Drag to resize · double-tap to hide"></div>
     <div class="piano-tools">
       <button class="btn sm" id="togglePiano">Hide ▾</button>
       <div class="seg" id="viewSeg">
@@ -452,7 +559,7 @@ select:focus,.txtin:focus{border-color:var(--neon);box-shadow:0 0 8px rgba(0,240
 </div>
 
 <input type="file" id="projFile" accept=".hidlab,.json" style="display:none">
-<input type="file" id="padAudioFile" accept="audio/*" style="display:none">
+<input type="file" id="padAudioFile" accept="audio/*,video/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.mp4,.mov,.webm,.m4v,.3gp" style="display:none">
 <div id="toast"></div>
 <script>
 "use strict";
@@ -918,6 +1025,13 @@ const VM={
     if(this.monoVoice) this.monoVoice.setBend(cents,gt);
     Pads.applyBend(cents,gt);
   },
+  // live filter sweep (used by the Camera motion controller) — affects currently sounding voices
+  setLiveCutoff(freq){
+    const t=ctx?ctx.currentTime:0; const f=Math.max(60,Math.min(18000,freq));
+    const ramp=v=>{ if(v&&v.filter){ try{ v.filter.frequency.cancelScheduledValues(t); v.filter.frequency.linearRampToValueAtTime(f,t+0.03); }catch(e){} } };
+    this.voices.forEach(ramp);
+    if(this.monoVoice) ramp(this.monoVoice);
+  },
   killAll(){
     this.voices.forEach(v=>v.stop(0.02)); this.voices.clear();
     if(this.monoVoice){this.monoVoice.stop(0.02);this.monoVoice=null;}
@@ -1153,13 +1267,14 @@ function paintKeyVisual(visualMidi,on,cls){
    ============================================================ */
 const PAD_KEYS=['1','2','3','4','5','6','7','8','9','0','-','='];
 const Pads={
-  list:[], playMode:'toggle', selected:null, cols:4, idc:0,
+  list:[], playMode:'toggle', selected:null, cols:4, idc:0, cursor:-1,
 
   newPad(extra={}){
     const id='p'+(this.idc++);
     const pad=Object.assign({
       id, name:'Empty', type:'empty', notes:[], snapshot:null,
       buffer:null, bufName:'', transpose:0, bendEnabled:true, gain:0.9,
+      media:null, mediaSrc:null, fileB64:null, mime:'',
       key:PAD_KEYS[this.list.length]||'', bus:null, eq:null, delaySend:null,
       voices:[], source:null, playing:false
     },extra);
@@ -1194,13 +1309,32 @@ const Pads={
       if(pad.playing) this._stop(pad); else this._start(pad);
     }
   },
+  // step through saved (non-empty) pads with wraparound — used by ◄/► keys
+  cycle(dir){
+    ensureCtx(); this.ensureAudio();
+    const saved=this.list.filter(p=>p.type!=='empty');
+    if(!saved.length){ toast('No saved pads to cycle'); return; }
+    this.cursor=((this.cursor+dir)%saved.length + saved.length)%saved.length;
+    const pad=saved[this.cursor];
+    this.selected=pad.id;
+    this.trigger(pad.id);
+    this.render();
+    toast('Pad '+(pad.key||(this.cursor+1))+' · '+pad.name);
+  },
   _start(pad){
     pad.playing=true;
     if(pad.type==='audio'&&pad.buffer){
-      const s=ctx.createBufferSource(); s.buffer=pad.buffer; s.loop=true;
-      s.playbackRate.value=Math.pow(2,pad.transpose/12);
-      if(pad.bendEnabled){ s.detune.value=VM.bendCents; }
-      s.connect(pad.bus); s.start(); pad.source=s;
+      const s=ctx.createBufferSource(); s.buffer=pad.buffer; s.loop=!!pad.loop;
+      try{ s.playbackRate.value=Math.pow(2,(pad.transpose||0)/12); }catch(e){}
+      if(pad.bendEnabled){ try{ s.detune.value=VM.bendCents; }catch(e){} }
+      s.connect(pad.bus);
+      s.onended=()=>{ if(pad.source===s){ pad.playing=false; pad.source=null; this._paint(pad); } };
+      s.start(); pad.source=s;
+    } else if(pad.type==='media'&&pad.media){
+      try{ pad.media.playbackRate=Math.pow(2,(pad.transpose||0)/12); }catch(e){}
+      pad.media.loop=!!pad.loop;
+      try{ pad.media.currentTime=0; }catch(e){}
+      const pr=pad.media.play(); if(pr&&pr.catch)pr.catch(()=>{});
     } else if(pad.type==='notes'){
       const params=pad.snapshot||E.live;
       pad.voices=pad.notes.map(n=>{
@@ -1214,7 +1348,8 @@ const Pads={
   },
   _stop(pad){
     pad.playing=false;
-    if(pad.source){ try{pad.source.stop();}catch(e){} pad.source=null; }
+    if(pad.source){ try{pad.source.onended=null; pad.source.stop();}catch(e){} pad.source=null; }
+    if(pad.media){ try{pad.media.pause();}catch(e){} }
     pad.voices.forEach(v=>v.stop()); pad.voices=[];
     this._paint(pad);
   },
@@ -1235,13 +1370,22 @@ const Pads={
     const p=this.list[i]; if(p.playing)this._stop(p);
     this.list.splice(i,1); if(this.selected===id) this.selected=this.list.length?this.list[0].id:null;
     this.render(); },
-  assignNotes(id,notes,name){ const p=this.byId(id); if(!p)return;
-    p.type='notes'; p.notes=[...notes]; p.name=name||('Chord '+notes.length);
+  assignNotes(id,notes,name){ const p=this.byId(id); if(!p)return; this._clearMedia(p);
+    p.type='notes'; p.notes=[...notes]; p.name=name||('Chord '+notes.length); p.buffer=null;
     p.snapshot=JSON.parse(JSON.stringify(E.live)); this.render(); },
-  assignAudio(id,buffer,name){ const p=this.byId(id); if(!p)return;
-    p.type='audio'; p.buffer=buffer; p.bufName=name; p.name=name.replace(/\.[^.]+$/,'').slice(0,16); this.render(); },
-  clearPad(id){ const p=this.byId(id); if(!p)return; if(p.playing)this._stop(p);
-    p.type='empty'; p.notes=[]; p.buffer=null; p.name='Empty'; this.render(); },
+  assignAudio(id,buffer,name,b64,mime){ const p=this.byId(id); if(!p)return; if(p.playing)this._stop(p); this._clearMedia(p);
+    p.type='audio'; p.buffer=buffer; p.bufName=name||'audio'; p.name=(name||'audio').replace(/\.[^.]+$/,'').slice(0,16);
+    if(b64!=null){ p.fileB64=b64; p.mime=mime||''; } this.render(); },
+  // fallback for files the browser can't decode to PCM (e.g. some video containers): play via media element
+  assignMedia(id,el,name,b64,mime){ const p=this.byId(id); if(!p)return; if(p.playing)this._stop(p); this._clearMedia(p);
+    p.type='media'; p.media=el; p.bufName=name||'media'; p.name=(name||'media').replace(/\.[^.]+$/,'').slice(0,16);
+    p.mime=mime||''; if(b64!=null) p.fileB64=b64;
+    try{ el.loop=false; el.onended=()=>{ p.playing=false; this._paint(p); }; }catch(e){}
+    if(ctx){ try{ p.mediaSrc=ctx.createMediaElementSource(el); p.mediaSrc.connect(p.bus); }catch(e){} }
+    this.render(); },
+  _clearMedia(p){ if(p.media){ try{p.media.pause();}catch(e){} } if(p.mediaSrc){ try{p.mediaSrc.disconnect();}catch(e){} } p.media=null; p.mediaSrc=null; },
+  clearPad(id){ const p=this.byId(id); if(!p)return; if(p.playing)this._stop(p); this._clearMedia(p);
+    p.type='empty'; p.notes=[]; p.buffer=null; p.fileB64=null; p.mime=''; p.name='Empty'; this.render(); },
 
   setPlayMode(m){ this.playMode=m; if(m!=='stack') this.killAll(); },
 
@@ -1536,8 +1680,8 @@ WinMgr.registry.pads={title:'Pads',w:430,h:470,build(body){
 WinMgr.registry.bend={title:'Pitch Bend',w:300,h:250,build(body){
   body.innerHTML='';
   const grid=document.createElement('div'); grid.className='knob-grid';
-  grid.appendChild(makeKnob('Range',1,24,BendCtl.range,v=>Math.round(v)+' st',v=>BendCtl.range=Math.round(v)));
-  grid.appendChild(makeKnob('Glide',0,0.6,BendCtl.glide,v=>Math.round(v*1000)+'ms',v=>BendCtl.glide=v));
+  grid.appendChild(makeKnob('Range',1,24,BendCtl.range,v=>Math.round(v)+' st',v=>BendCtl.setRange(Math.round(v))));
+  grid.appendChild(makeKnob('Glide',0,1.2,BendCtl.glide,v=> v<=0.002?'instant':Math.round(v*1000)+'ms',v=>BendCtl.setGlide(v)));
   body.appendChild(grid);
   const r=document.createElement('div'); r.className='row'; r.style.marginTop='14px';
   const hold=document.createElement('button'); hold.className='btn'; hold.style.flex='1';
@@ -1546,7 +1690,7 @@ WinMgr.registry.bend={title:'Pitch Bend',w:300,h:250,build(body){
     if(!BendCtl.hold){ BendCtl.set(0); } };
   r.appendChild(hold); body.appendChild(r);
   const h=document.createElement('div'); h.className='hint'; h.style.marginTop='10px';
-  h.textContent='Drag the wheel by the piano, or use ◄ / ► keys. HOLD keeps the bend latched after release.';
+  h.textContent='Drag the wheel by the piano, or use the ▲ / ▼ arrow keys. Glide sets how fast the pitch slides. HOLD latches the bend after release.';
   body.appendChild(h);
 }};
 
@@ -1680,6 +1824,47 @@ WinMgr.registry.theme={title:'Colors / Theme',w:330,h:480,build(body){
 }};
 
 /* ---- HELP ---- */
+WinMgr.registry.camera={title:'Camera',w:340,h:440,build(body){
+  body.innerHTML='';
+  if(!Camera.supported()){
+    const w=document.createElement('div'); w.className='hint';
+    w.textContent='Camera needs a secure (HTTPS) page + permission. It works on GitHub Pages; opening the file directly from disk may block it.';
+    body.appendChild(w);
+  }
+  const stage=document.createElement('div'); stage.className='cam-stage';
+  stage.innerHTML='<video id="camPreview" playsinline muted></video><div id="camDot" class="cam-dot"></div>'+
+    '<div id="camPlaceholder" class="ph">Camera off.<br>Tap “Enable Camera” — then move to play the synth.</div>';
+  body.appendChild(stage);
+  const read=document.createElement('div'); read.className='cam-read'; read.id='camRead'; read.textContent='motion 0%'; body.appendChild(read);
+
+  const row1=document.createElement('div'); row1.className='cam-row';
+  const en=document.createElement('button'); en.className='btn'; en.id='camEnableBtn'; en.style.flex='1'; en.textContent='Enable Camera'; en.onclick=()=>Camera.toggle();
+  const flip=document.createElement('button'); flip.className='btn sm'; flip.textContent='Flip'; flip.onclick=()=>Camera.flip();
+  const bg=document.createElement('button'); bg.className='btn sm'; bg.id='camBgBtn'; bg.textContent='Background'; bg.onclick=()=>Camera.setBackground(!Camera.bg);
+  row1.append(en,flip,bg); body.appendChild(row1);
+
+  const lab=document.createElement('div'); lab.className='tb-label'; lab.style.marginTop='12px'; lab.textContent='Motion controls'; body.appendChild(lab);
+  const tseg=document.createElement('div'); tseg.className='seg'; tseg.id='camTargetSeg';
+  [['off','Off'],['pitch','Pitch'],['bright','Bright'],['volume','Vol'],['motion','Energy']].forEach(([t,l])=>{
+    const b=document.createElement('button'); b.dataset.t=t; b.textContent=l; if(t===Camera.target)b.classList.add('on');
+    b.onclick=()=>Camera.setTarget(t); tseg.appendChild(b); });
+  body.appendChild(tseg);
+
+  const grid=document.createElement('div'); grid.className='knob-grid'; grid.style.marginTop='10px';
+  grid.appendChild(makeKnob('Sensitivity',0.2,3,Camera.sens,v=>v.toFixed(1)+'x',v=>Camera.setSens(v)));
+  body.appendChild(grid);
+
+  const row2=document.createElement('div'); row2.className='cam-row';
+  const rec=document.createElement('button'); rec.className='btn'; rec.id='camRecBtn'; rec.style.flex='1'; rec.textContent='● Rec → Pad'; rec.onclick=()=>Camera.recToPad();
+  row2.appendChild(rec); body.appendChild(row2);
+
+  const h=document.createElement('div'); h.className='hint'; h.style.marginTop='10px';
+  h.textContent='Pitch = move left/right to bend · Bright/Vol = move up/down · Energy = more movement, more bend. “Rec → Pad” records a camera clip (with mic) into the selected pad.';
+  body.appendChild(h);
+
+  Camera._attachPreview(); Camera._syncUI();
+}};
+
 WinMgr.registry.help={title:'Help Guide',w:380,h:460,build(body){
   body.innerHTML='';
   const sections=[
@@ -1687,10 +1872,11 @@ WinMgr.registry.help={title:'Help Guide',w:380,h:460,build(body){
     ['Playing','Use the piano at the bottom, your computer keyboard (A–L row), or switch to Chromatic bars locked to a scale. Octave, Transpose and Sustain sit beside the piano.'],
     ['Sound Banks','Pick one of 5 banks (Bass, Strings, Lead, E-Piano, Pads) and 20 presets each from the selectors by the piano. Sound Design reshapes the chosen voice.'],
     ['Pads','Save chord shapes (Build Mode) or upload audio to pads. Three modes: Toggle, Solo (one at a time), Stack (layer cleanly). Transpose & bend-enable per pad.'],
-    ['Pitch Bend','Drag the wheel or use ◄/►. Set range & glide in the Pitch Bend window. HOLD latches a bend on.'],
+    ['Pitch Bend','Drag the wheel or use ▲/▼. Set range & glide in the Pitch Bend window. HOLD latches a bend on. ◄/► step through your saved pads.'],
     ['3D Sound','Add ethereal sound points and drag them around the radar to place them in space. Ambience adds glittery reverb over everything.'],
     ['EQ & Delay','EQ targets the Global mix, Live Piano, or Selected Pad. Delay time follows the master BPM (with tap tempo) at the top.'],
     ['Enhance','The slider under master volume thickens & deepens the output. Toggle it on with its button.'],
+    ['Camera','Open Camera, tap Enable, and your motion plays the synth: move left/right to bend pitch, up/down for brightness or volume, or use Energy so more movement bends more. Flip switches front/rear, Background shows the live feed behind your windows, and Rec → Pad records a camera clip (with mic) into the selected pad.'],
     ['Projects','Save Project writes a .hidlab file with your full setup; Load Project restores it. KILL silences everything instantly.']
   ];
   sections.forEach(([h,p])=>{ const hd=document.createElement('div'); hd.className='help-h'; hd.textContent=h;
@@ -1705,7 +1891,8 @@ WinMgr.registry.shortcuts={title:'Keyboard Shortcuts',w:340,h:460,build(body){
     ['Z / X','Octave down / up'],
     ['C / V','Transpose down / up'],
     ['Space','Sustain (hold-toggle)'],
-    ['◄ / ►','Pitch bend down / up'],
+    ['▲ / ▼','Pitch bend up / down'],
+    ['◄ / ►','Step to previous / next saved pad'],
     ['B','Latch pitch-bend HOLD'],
     ['1 … 0 - =','Trigger pads 1–12'],
     ['P','Enable / disable live piano keys'],
@@ -1713,6 +1900,7 @@ WinMgr.registry.shortcuts={title:'Keyboard Shortcuts',w:340,h:460,build(body){
     ['Backspace','KILL — silence everything'],
     ['Shift+1 … Shift+0','Open windows (Sound, EQ, Pads…)'],
     ['`','Show / hide piano'],
+    ['T / Y / G','(also piano keys — see above)'],
     ['Esc','Close focused window']
   ];
   rows.forEach(([k,d])=>{ const r=document.createElement('div'); r.className='sc-row';
@@ -1723,15 +1911,46 @@ WinMgr.registry.shortcuts={title:'Keyboard Shortcuts',w:340,h:460,build(body){
    PITCH BEND CONTROL
    ============================================================ */
 const BendCtl={
-  range:2, glide:0.06, hold:false, norm:0,
+  range:2,            // semitone range
+  glide:0.18,         // seconds to traverse the FULL bend range (speed control)
+  hold:false,
+  norm:0,             // target wheel position -1..1 (where the user set it)
+  cur:0,              // currently-applied bend in cents (animated toward target)
+  target:0,           // target bend in cents
+  raf:null, last:0,
+  setRange(st){ this.range=st; this.target=this.norm*this.range*100; this._run(); },
+  setGlide(s){ this.glide=Math.max(0,s); },
   set(norm){
     this.norm=Math.max(-1,Math.min(1,norm));
-    const cents=this.norm*this.range*100;
-    if(ctx) VM.applyBend(cents,this.glide);
+    this.target=this.norm*this.range*100;
     const grip=document.getElementById('pwGrip');
-    if(grip) grip.style.top=(50 - this.norm*42)+'%';
+    if(grip) grip.style.top=(50 - this.norm*42)+'%'; // wheel grip tracks finger immediately
+    this._run();
   },
-  release(){ if(!this.hold) this.set(0); }
+  release(){ if(!this.hold){ this.set(0); } },
+  _run(){
+    if(this.raf!=null) return;            // animation already running
+    this.last=performance.now();
+    const step=()=>{
+      const now=performance.now();
+      let dt=(now-this.last)/1000; this.last=now;
+      if(dt>0.1) dt=0.1;                   // clamp after tab-switch etc.
+      const diff=this.target-this.cur;
+      if(this.glide<=0.002){
+        this.cur=this.target;
+      } else {
+        const fullRange=this.range*100*2;  // cents across -max..+max
+        const rate=fullRange/this.glide;   // cents per second
+        const stepAmt=rate*dt;
+        if(Math.abs(diff)<=stepAmt) this.cur=this.target;
+        else this.cur+=Math.sign(diff)*stepAmt;
+      }
+      if(ctx) VM.applyBend(this.cur,0);    // apply instantly each frame -> smooth ramp
+      if(this.cur!==this.target){ this.raf=requestAnimationFrame(step); }
+      else { this.raf=null; }
+    };
+    this.raf=requestAnimationFrame(step);
+  }
 };
 
 /* ============================================================
@@ -1740,15 +1959,40 @@ const BendCtl={
 function setView(v){
   KB.view=v; renderKeyboard();
   document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
-  const ks=WinMgr.open.get('keys'); // keep keys window seg in sync if open
-  if(ks) ks.querySelectorAll('.seg button').forEach(b=>{ if(b.textContent.toLowerCase().startsWith(v.slice(0,5))) {} });
 }
-let pianoHidden=false;
-function togglePiano(force){
-  pianoHidden = force!==undefined? force : !pianoHidden;
-  document.getElementById('pianoDock').classList.toggle('hidden',pianoHidden);
-  const b=document.getElementById('togglePiano'); if(b) b.textContent=pianoHidden?'Show ▴':'Hide ▾';
-}
+
+/* ============================================================
+   LAYOUT CONTROL — hide / show / resize top + piano, stage mode
+   ============================================================ */
+const Layout={
+  topHidden:false, pianoHidden:false, stage:false,
+  topH:0,        // 0 = natural height
+  KB_MIN:60, KB_MAX:340, KB_HIDE:46,
+  apply(){
+    const app=document.getElementById('app');
+    app.classList.toggle('top-hidden',this.topHidden||this.stage);
+    app.classList.toggle('piano-hidden',this.pianoHidden||this.stage);
+    app.classList.toggle('stage',this.stage);
+    document.getElementById('topRegion').classList.toggle('hidden',this.topHidden);
+    document.getElementById('pianoDock').classList.toggle('hidden',this.pianoHidden);
+    const vt=document.getElementById('vcTop'), vp=document.getElementById('vcPiano'), vs=document.getElementById('vcStage');
+    if(vt) vt.classList.toggle('on',!this.topHidden && !this.stage);
+    if(vp) vp.classList.toggle('on',!this.pianoHidden && !this.stage);
+    if(vs) vs.classList.toggle('on',this.stage);
+    const tp=document.getElementById('togglePiano'); if(tp) tp.textContent=this.pianoHidden?'Show ▴':'Hide ▾';
+  },
+  toggleTop(force){ this.topHidden = force!==undefined?force:!this.topHidden; if(this.stage&&!this.topHidden)this.stage=false; this.apply(); },
+  togglePiano(force){ this.pianoHidden = force!==undefined?force:!this.pianoHidden; if(this.stage&&!this.pianoHidden)this.stage=false; this.apply(); },
+  toggleStage(force){ this.stage = force!==undefined?force:!this.stage; this.apply(); },
+  setKbHeight(px){ const h=Math.max(this.KB_HIDE,Math.min(this.KB_MAX,px));
+    if(h<=this.KB_HIDE+2){ this.togglePiano(true); }
+    else { document.documentElement.style.setProperty('--kb-h',h+'px'); if(this.pianoHidden)this.togglePiano(false); } },
+  setTopHeight(px){ const region=document.getElementById('topRegion');
+    if(px<=30){ this.toggleTop(true); region.style.maxHeight=''; }
+    else { this.toggleTop(false); region.style.maxHeight=px+'px'; region.style.overflowY='auto'; } }
+};
+// back-compat alias used elsewhere
+function togglePiano(force){ Layout.togglePiano(force); }
 
 /* ============================================================
    TOAST
@@ -1820,8 +2064,10 @@ function onKeyDown(e){
     case 'z': adjOct(-1); return; case 'x': adjOct(1); return;
     case 'c': adjTr(-1); return; case 'v': adjTr(1); return;
     case ' ': toggleSustain(); e.preventDefault(); return;
-    case 'arrowleft': BendCtl.set(-1); e.preventDefault(); return;
-    case 'arrowright': BendCtl.set(1); e.preventDefault(); return;
+    case 'arrowup': BendCtl.set(1); e.preventDefault(); return;
+    case 'arrowdown': BendCtl.set(-1); e.preventDefault(); return;
+    case 'arrowright': Pads.cycle(1); e.preventDefault(); return;
+    case 'arrowleft': Pads.cycle(-1); e.preventDefault(); return;
     case 'b': BendCtl.hold=!BendCtl.hold; toast('Bend hold '+(BendCtl.hold?'ON':'OFF')); { const w=WinMgr.open.get('bend'); if(w)WinMgr.registry.bend.build(w.querySelector('.win-body'),w);} return;
     case 'p': togglePianoEnable(); return;
     case 'm': cyclePadMode(); return;
@@ -1838,7 +2084,7 @@ function onKeyDown(e){
 }
 function onKeyUp(e){
   const k=e.key.toLowerCase();
-  if(k==='arrowleft'||k==='arrowright'){ BendCtl.release(); return; }
+  if(k==='arrowup'||k==='arrowdown'){ BendCtl.release(); return; }
   if(PIANO_KEYS[k]!==undefined){ if(!keyDown.has(k))return; keyDown.delete(k);
     const vmid=compBase()+PIANO_KEYS[k]; releaseVisual(vmid,sounding(vmid)); }
 }
@@ -1856,10 +2102,41 @@ function cyclePadMode(){ const order=['toggle','solo','stack']; const i=(order.i
 function killAll(){ VM.killAll(); Pads.killAll(); toast('KILL — all stopped'); }
 
 /* ============================================================
+   AUDIO FILE HELPERS (base64 <-> buffer, media fallback)
+   ============================================================ */
+function arrayBufferToB64(ab){ const bytes=new Uint8Array(ab); let bin=''; const chunk=0x8000;
+  for(let i=0;i<bytes.length;i+=chunk){ bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+chunk)); }
+  return btoa(bin); }
+function b64ToArrayBuffer(b64){ const bin=atob(b64); const len=bin.length; const bytes=new Uint8Array(len);
+  for(let i=0;i<len;i++) bytes[i]=bin.charCodeAt(i); return bytes.buffer; }
+function b64ToBlobUrl(b64,mime){ const buf=b64ToArrayBuffer(b64); return URL.createObjectURL(new Blob([buf],{type:mime||'application/octet-stream'})); }
+function guessMime(name){ const ext=(name.split('.').pop()||'').toLowerCase();
+  const m={mp3:'audio/mpeg',wav:'audio/wav',ogg:'audio/ogg',oga:'audio/ogg',m4a:'audio/mp4',aac:'audio/aac',flac:'audio/flac',opus:'audio/opus',weba:'audio/webm',
+    mp4:'video/mp4',m4v:'video/mp4',mov:'video/quicktime',webm:'video/webm','3gp':'video/3gpp',avi:'video/x-msvideo',mkv:'video/x-matroska'};
+  return m[ext]||''; }
+function loadViaMediaElement(target,b64,mime,name){
+  const isVideo=/^video\//.test(mime||'')|| /\.(mp4|mov|webm|m4v|3gp|avi|mkv)$/i.test(name||'');
+  const el=document.createElement(isVideo?'video':'audio'); el.preload='auto';
+  let url; try{ url=b64ToBlobUrl(b64,mime||guessMime(name)); }catch(e){ url='data:'+(mime||'audio/mpeg')+';base64,'+b64; }
+  el.src=url;
+  el.addEventListener('loadedmetadata',()=>{ Pads.assignMedia(target,el,name,b64,mime||guessMime(name)); toast('Loaded (stream): '+name); },{once:true});
+  el.addEventListener('error',()=>{ toast('Unsupported file: '+(name||'')); },{once:true});
+  if(el.load) el.load();
+}
+function restorePadAudio(padId,b64,mime,name,transpose,bendEnabled){
+  ensureCtx(); let done=false;
+  const fin=()=>{ const p=Pads.byId(padId); if(p){ p.transpose=transpose||0; p.bendEnabled=bendEnabled!==false; } Pads.render(); };
+  const ok=buf=>{ if(done)return; done=true; Pads.assignAudio(padId,buf,name,b64,mime); fin(); };
+  const fail=()=>{ if(done)return; done=true; loadViaMediaElement(padId,b64,mime,name); setTimeout(fin,60); };
+  try{ const ab=b64ToArrayBuffer(b64); const pr=ctx.decodeAudioData(ab.slice(0),ok,fail); if(pr&&pr.then)pr.then(ok).catch(fail); }
+  catch(e){ fail(); }
+}
+
+/* ============================================================
    PROJECT SAVE / LOAD
    ============================================================ */
 function serializeProject(){
-  return { app:'HID Lab', version:1,
+  return { app:'HID Lab', version:2,
     sel:{...sel}, live:E.live,
     kb:{startMidi:KB.startMidi,whiteCount:KB.whiteCount,keyW:KB.keyW,view:KB.view,octave:KB.octave,transpose:KB.transpose,scale:KB.scale,root:KB.root},
     vm:{playMode:VM.playMode}, tempo:{bpm:Tempo.bpm,div:Tempo.div},
@@ -1867,7 +2144,12 @@ function serializeProject(){
     enhancer:{on:Enhancer.on,amt:Enhancer.amt},
     master:E.master?E.master.gain.value:0.8,
     eq:{ global:eqState(E.gEQ), piano:eqState(E.pianoEQ) },
-    pads:Pads.list.map(p=>({name:p.name,type:p.type==='audio'?'empty':p.type,notes:p.notes,snapshot:p.snapshot,transpose:p.transpose,bendEnabled:p.bendEnabled,key:p.key})),
+    pads:Pads.list.map(p=>({
+      name:p.name, type:p.type, notes:p.notes, snapshot:p.snapshot,
+      transpose:p.transpose, bendEnabled:p.bendEnabled, key:p.key,
+      bufName:p.bufName, mime:p.mime,
+      fileB64:(p.type==='audio'||p.type==='media')?(p.fileB64||null):null
+    })),
     padMode:Pads.playMode, cols:Pads.cols,
     space:SpaceFX.points.map(pt=>({tier:pt.tier,midi:pt.midi,x:pt.x,y:pt.y,level:pt.level,bright:pt.bright,shimmer:pt.shimmer,detune:pt.detune})),
     spaceWet:E.spaceWet?E.spaceWet.gain.value:0,
@@ -1877,7 +2159,7 @@ function serializeProject(){
 function eqState(eq){ return {low:eq.low.gain.value,mid:eq.mid.gain.value,high:eq.high.gain.value,midF:eq.mid.frequency.value,midQ:eq.mid.Q.value}; }
 function applyEqState(eq,s){ if(!s)return; eq.low.gain.value=s.low; eq.mid.gain.value=s.mid; eq.high.gain.value=s.high; if(s.midF)eq.mid.frequency.value=s.midF; if(s.midQ)eq.mid.Q.value=s.midQ; }
 function saveProject(){
-  const data=JSON.stringify(serializeProject(),null,1);
+  const data=JSON.stringify(serializeProject());
   const blob=new Blob([data],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download='project.hidlab'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000); toast('Project saved');
@@ -1893,8 +2175,13 @@ function loadProjectData(d){
     if(typeof d.master==='number' && E.master){ E.master.gain.value=d.master; document.getElementById('masterVol').value=d.master; }
     if(d.eq){ applyEqState(E.gEQ,d.eq.global); applyEqState(E.pianoEQ,d.eq.piano); }
     if(d.enhancer){ Enhancer.amt=d.enhancer.amt; document.getElementById('enhanceAmt').value=d.enhancer.amt; if(d.enhancer.on!==Enhancer.on)Enhancer.toggle(); else Enhancer._apply(); }
-    if(d.pads){ Pads.killAll(); Pads.list=[]; Pads.idc=0;
-      d.pads.forEach(pd=>{ const p=Pads.newPad({name:pd.name||'Empty',type:pd.type||'empty',notes:pd.notes||[],snapshot:pd.snapshot||null,transpose:pd.transpose||0,bendEnabled:pd.bendEnabled!==false,key:pd.key||''}); });
+    if(d.pads){ Pads.killAll(); Pads.list.forEach(p=>Pads._clearMedia(p)); Pads.list=[]; Pads.idc=0; Pads.cursor=-1;
+      d.pads.forEach(pd=>{
+        const audioPad=(pd.type==='audio'||pd.type==='media');
+        const p=Pads.newPad({name:pd.name||'Empty',type:audioPad?'empty':(pd.type||'empty'),notes:pd.notes||[],snapshot:pd.snapshot||null,
+          transpose:pd.transpose||0,bendEnabled:pd.bendEnabled!==false,key:pd.key||'',bufName:pd.bufName||'',mime:pd.mime||''});
+        if(audioPad && pd.fileB64){ restorePadAudio(p.id,pd.fileB64,pd.mime,pd.bufName||pd.name||'audio',pd.transpose,pd.bendEnabled); }
+      });
       if(!Pads.list.length)Pads.init(); Pads.selected=Pads.list[0].id; Pads.cols=d.cols||4; Pads.playMode=d.padMode||'toggle'; Pads.render(); }
     if(d.space){ SpaceFX.killAll(); d.space.forEach(s=>{ SpaceFX.add(); const pt=SpaceFX.points[SpaceFX.points.length-1]; Object.assign(pt,s); SpaceFX._place(pt);
       if(pt.nodes){pt.nodes.amp.gain.value=pt.level; pt.nodes.lp.frequency.value=pt.bright; pt.nodes.lfo.frequency.value=pt.shimmer;} }); }
@@ -1943,6 +2230,7 @@ function launch(){
   const home=document.getElementById('home'); home.classList.add('lifting');
   setTimeout(()=>{ home.style.display='none'; if(scopeRAF)cancelAnimationFrame(scopeRAF); },700);
   document.getElementById('app').classList.add('on');
+  Layout.apply();
   startMasterScope();
   toast('Welcome to HID Lab');
 }
@@ -1951,8 +2239,123 @@ function startMasterScope(){
 }
 
 /* ============================================================
+   CAMERA — live feed, motion control (theremin), background, record-to-pad
+   ============================================================ */
+const Camera={
+  stream:null, on:false, facing:'user', bg:false,
+  target:'pitch', sens:1.0,
+  raf:null, cv:null, cctx:null, prev:null, W:64, H:48,
+  motion:0, cx:0.5, cy:0.5,
+  recorder:null, recState:false,
+  supported(){ return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia); },
+  async enable(){
+    if(this.on) return;
+    if(!this.supported()){ toast('Camera not supported here (needs HTTPS)'); return; }
+    let stream=null;
+    try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:this.facing},audio:true}); }
+    catch(e){ try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:this.facing},audio:false}); }
+      catch(e2){ toast('Camera blocked or unavailable'); return; } }
+    this.stream=stream;
+    const bg=document.getElementById('camBg');
+    if(bg){ bg.srcObject=stream; bg.muted=true; try{ await bg.play(); }catch(e){} bg.classList.toggle('on',this.bg); }
+    if(!this.cv){ this.cv=document.createElement('canvas'); this.cv.width=this.W; this.cv.height=this.H;
+      this.cctx=this.cv.getContext('2d',{willReadFrequently:true}); }
+    this.prev=null; this.on=true;
+    this._attachPreview();
+    this._loop();
+    this._syncUI();
+    toast('Camera on');
+  },
+  disable(){
+    this.on=false;
+    if(this.raf){ cancelAnimationFrame(this.raf); this.raf=null; }
+    if(this.recorder && this.recState){ try{this.recorder.stop();}catch(e){} }
+    if(this.stream){ this.stream.getTracks().forEach(t=>{ try{t.stop();}catch(e){} }); this.stream=null; }
+    const bg=document.getElementById('camBg'); if(bg){ bg.srcObject=null; bg.classList.remove('on'); }
+    const pv=document.getElementById('camPreview'); if(pv) pv.srcObject=null;
+    this.prev=null; this._syncUI();
+    toast('Camera off');
+  },
+  toggle(){ this.on?this.disable():this.enable(); },
+  setBackground(b){ this.bg=b; const bg=document.getElementById('camBg'); if(bg) bg.classList.toggle('on',b&&this.on); this._syncUI(); },
+  async flip(){ this.facing=this.facing==='user'?'environment':'user'; if(this.on){ this.disable(); await this.enable(); } this._syncUI(); },
+  setTarget(t){ this.target=t; if(t!=='pitch'&&t!=='motion') BendCtl.set(0); this._syncUI(); },
+  setSens(v){ this.sens=v; },
+  _attachPreview(){ const pv=document.getElementById('camPreview'); if(pv&&this.stream){ pv.srcObject=this.stream; pv.muted=true; pv.play&&pv.play().catch(()=>{}); } },
+  _loop(){
+    const step=()=>{
+      if(!this.on) return;
+      this.raf=requestAnimationFrame(step);
+      const v=document.getElementById('camBg');
+      if(!v||v.readyState<2){ return; }
+      try{ this.cctx.drawImage(v,0,0,this.W,this.H); }catch(e){ return; }
+      let cur; try{ cur=this.cctx.getImageData(0,0,this.W,this.H).data; }catch(e){ return; }
+      if(this.prev){
+        let sx=0,sy=0,cnt=0;
+        for(let y=0;y<this.H;y++) for(let x=0;x<this.W;x++){ const i=(y*this.W+x)*4;
+          const d=Math.abs(cur[i]-this.prev[i])+Math.abs(cur[i+1]-this.prev[i+1])+Math.abs(cur[i+2]-this.prev[i+2]);
+          if(d>60){ sx+=x; sy+=y; cnt++; } }
+        this.motion=Math.min(1, cnt/(this.W*this.H*0.4));
+        if(cnt>0){ this.cx=sx/cnt/this.W; this.cy=sy/cnt/this.H; }
+        this._apply();
+        const dot=document.getElementById('camDot'); if(dot){ dot.style.left=((1-this.cx)*100)+'%'; dot.style.top=(this.cy*100)+'%'; dot.style.opacity=this.motion>0.02?1:0.25; }
+        const rd=document.getElementById('camRead'); if(rd) rd.textContent='motion '+Math.round(this.motion*100)+'%   pos x:'+this.cx.toFixed(2)+' y:'+this.cy.toFixed(2);
+      }
+      this.prev=new Uint8ClampedArray(cur);
+    };
+    this.raf=requestAnimationFrame(step);
+  },
+  _apply(){
+    if(this.target==='off') return;
+    const s=this.sens;
+    if(this.target==='pitch'){ BendCtl.set(Math.max(-1,Math.min(1,(this.cx-0.5)*2*s))); }
+    else if(this.target==='motion'){ BendCtl.set(Math.max(0,Math.min(1,this.motion*2*s))); }
+    else if(this.target==='bright'){ if(E.gEQ){ E.gEQ.high.gain.value=Math.max(-24,Math.min(24,(0.5-this.cy)*2*18*s)); } }
+    else if(this.target==='volume'){ if(E.master){ const g=Math.max(0,Math.min(1,(1-this.cy)*s)); E.master.gain.value=g; const mv=document.getElementById('masterVol'); if(mv) mv.value=g; } }
+  },
+  recToPad(){
+    if(!this.on||!this.stream){ toast('Enable the camera first'); return; }
+    if(typeof MediaRecorder==='undefined'){ toast('Recording not supported here'); return; }
+    if(this.recorder && this.recState){ try{this.recorder.stop();}catch(e){} return; }
+    let mime=''; ['video/webm','video/mp4'].forEach(m=>{ if(!mime && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) mime=m; });
+    let chunks=[];
+    try{ this.recorder=new MediaRecorder(this.stream, mime?{mimeType:mime}:undefined); }
+    catch(e){ toast('Recording not supported'); return; }
+    const target=Pads.selected;
+    this.recorder.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+    this.recorder.onstop=()=>{ this.recState=false; this._syncUI();
+      const blob=new Blob(chunks,{type:mime||'video/webm'});
+      const fr=new FileReader();
+      fr.onload=()=>{ const b64=String(fr.result).split(',')[1]; loadViaMediaElement(target,b64,mime||'video/webm','cam clip'); };
+      fr.readAsDataURL(blob); };
+    this.recorder.start(); this.recState=true; this._syncUI();
+    toast('Recording… tap “Stop → Pad” to finish');
+  },
+  _syncUI(){
+    const set=(id,txt,act)=>{ const b=document.getElementById(id); if(b){ if(txt!=null)b.textContent=txt; if(act!=null)b.classList.toggle('active',act); } };
+    set('camEnableBtn', this.on?'Camera: ON':'Enable Camera', this.on);
+    set('camBgBtn', null, this.bg&&this.on);
+    set('camRecBtn', this.recState?'■ Stop → Pad':'● Rec → Pad', this.recState);
+    document.querySelectorAll('#camTargetSeg button').forEach(b=>b.classList.toggle('on',b.dataset.t===this.target));
+    const ph=document.getElementById('camPlaceholder'); if(ph) ph.style.display=this.on?'none':'flex';
+  }
+};
+
+/* ============================================================
    INIT / EVENT WIRING
    ============================================================ */
+function wireResize(handle, o){
+  if(!handle) return;
+  let dragging=false, startVal=0, startY=0, moved=false, lastTap=0;
+  handle.addEventListener('pointerdown',e=>{ dragging=true; moved=false; startY=e.clientY; startVal=o.get();
+    try{handle.setPointerCapture(e.pointerId);}catch(_){ } e.preventDefault(); });
+  handle.addEventListener('pointermove',e=>{ if(!dragging) return; const dy=e.clientY-startY;
+    if(Math.abs(dy)>3) moved=true; o.move(startVal,dy); });
+  function end(){ if(!dragging) return; dragging=false;
+    if(!moved){ const now=performance.now(); if(now-lastTap<350){ o.dbl(); lastTap=0; } else lastTap=now; } }
+  handle.addEventListener('pointerup',end);
+  handle.addEventListener('pointercancel',()=>dragging=false);
+}
 function initUI(){
   // launch
   document.getElementById('launchBtn').addEventListener('click',launch);
@@ -1978,8 +2381,27 @@ function initUI(){
   // dock
   document.querySelectorAll('#dock .btn[data-win]').forEach(b=>b.onclick=()=>WinMgr.toggle(b.dataset.win));
 
+  // VIEW CONTROLS + reveal tabs
+  document.getElementById('vcTop').onclick=()=>Layout.toggleTop();
+  document.getElementById('vcPiano').onclick=()=>Layout.togglePiano();
+  document.getElementById('vcStage').onclick=()=>Layout.toggleStage();
+  document.getElementById('revealTop').onclick=()=>{ Layout.toggleStage(false); Layout.toggleTop(false); };
+  document.getElementById('revealPiano').onclick=()=>{ Layout.toggleStage(false); Layout.togglePiano(false); };
+
+  // RESIZE HANDLES (drag to resize, double-tap/click to hide)
+  wireResize(document.getElementById('kbResize'),{
+    get(){ const v=getComputedStyle(document.documentElement).getPropertyValue('--kb-h').trim(); return parseFloat(v)||150; },
+    move(start,dy){ Layout.setKbHeight(start - dy); },   // drag UP (negative dy) => taller
+    dbl(){ Layout.togglePiano(true); }
+  });
+  wireResize(document.getElementById('topResize'),{
+    get(){ return document.getElementById('topRegion').offsetHeight; },
+    move(start,dy){ Layout.setTopHeight(start + dy); },   // drag DOWN => taller
+    dbl(){ Layout.toggleTop(true); }
+  });
+
   // piano tools
-  document.getElementById('togglePiano').onclick=()=>togglePiano();
+  document.getElementById('togglePiano').onclick=()=>Layout.togglePiano();
   document.querySelectorAll('#viewSeg button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
   document.getElementById('octDown').onclick=()=>adjOct(-1);
   document.getElementById('octUp').onclick=()=>adjOct(1);
@@ -1992,9 +2414,26 @@ function initUI(){
   document.getElementById('bankSel').addEventListener('change',e=>{ sel.bank=parseInt(e.target.value); sel.preset=0; fillPresets(); loadLive(); });
   document.getElementById('presetSel').addEventListener('change',e=>{ sel.preset=parseInt(e.target.value); loadLive(); });
 
-  // pad audio upload
-  document.getElementById('padAudioFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f||padUploadTarget==null)return;
-    const rd=new FileReader(); rd.onload=()=>{ ensureCtx(); ctx.decodeAudioData(rd.result.slice(0),buf=>{ Pads.assignAudio(padUploadTarget,buf,f.name); toast('Audio loaded'); },err=>toast('Decode failed')); };
+  // pad audio / video upload (decode to PCM, else fall back to a media element)
+  document.getElementById('padAudioFile').addEventListener('change',e=>{ const f=e.target.files[0]; if(!f) return;
+    const target=padUploadTarget; if(target==null){ toast('Pick a pad first'); e.target.value=''; return; }
+    ensureCtx();
+    toast('Loading '+f.name+'…');
+    const rd=new FileReader();
+    rd.onerror=()=>{ toast('Could not read file'); };
+    rd.onload=()=>{
+      const ab=rd.result;
+      const b64=arrayBufferToB64(ab);
+      const mime=f.type||guessMime(f.name);
+      // try true PCM decode first (best quality, exact length, no effects)
+      let done=false;
+      const onOK=buf=>{ if(done)return; done=true; Pads.assignAudio(target,buf,f.name,b64,mime); toast('Loaded: '+f.name); };
+      const onFail=()=>{ if(done)return; done=true; loadViaMediaElement(target,b64,mime,f.name); };
+      try{
+        const p=ctx.decodeAudioData(ab.slice(0), onOK, onFail);
+        if(p&&p.then) p.then(onOK).catch(onFail);
+      }catch(err){ onFail(); }
+    };
     rd.readAsArrayBuffer(f); e.target.value=''; });
 
   // pitch wheel drag
